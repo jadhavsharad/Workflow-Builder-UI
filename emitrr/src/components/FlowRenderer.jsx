@@ -4,15 +4,26 @@ import Line from "./Line"
 export default function FlowRenderer({ workflow, setWorkflow, nodeId }) {
     const node = workflow.nodes[nodeId]
 
-    function addNode(parentId, branchKey) {
+    function addNode(parentId, type, branchKey) {
         const newId = crypto.randomUUID()
 
         setWorkflow(prev => {
             const parent = prev.nodes[parentId]
-            const newNode = { id: newId, type: "action", label: "New Action", next: null }
+            const newNode = { 
+                id: newId, 
+                type: type, 
+                label: type === "branch" ? "Condition" : (type === "end" ? "End" : "New Action"), 
+                next: null 
+            }
+            if (type === "branch") {
+                newNode.true = null;
+                newNode.false = null;
+            }
+
             const updatedParent = { ...parent }
+            
             if (parent.type === "branch") {
-                updatedParent[branchKey] = newId
+                if (branchKey) updatedParent[branchKey] = newId
             } else {
                 updatedParent.next = newId
             }
